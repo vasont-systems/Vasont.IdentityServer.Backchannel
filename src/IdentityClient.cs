@@ -25,13 +25,16 @@ namespace Vasont.IdentityServer.Backchannel
     public class IdentityClient
     {
         #region Private Constants
+
         /// <summary>
         /// Contains the Inspire back-end client identity.
         /// </summary>
         private const string DefaultIdentityClientId = "backchannel";
-        #endregion
+
+        #endregion Private Constants
 
         #region Private Fields
+
         /// <summary>
         /// Contains a value indicating whether the discovery endpoint is used for token endpoint information.
         /// </summary>
@@ -46,9 +49,11 @@ namespace Vasont.IdentityServer.Backchannel
         /// Contains the client authentication token response.
         /// </summary>
         private TokenResponse tokenResponse;
-        #endregion
+
+        #endregion Private Fields
 
         #region Public Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityClient"/> class.
         /// </summary>
@@ -64,16 +69,18 @@ namespace Vasont.IdentityServer.Backchannel
             this.ErrorResponse = new IdentityErrorResponseModel();
             this.useDiscoveryForEndpoint = useDiscoveryForEndpoint;
         }
-        #endregion
+
+        #endregion Public Constructors
 
         #region public Properties
+
         /// <summary>
         /// Gets the Identity Authority endpoint URI
         /// </summary>
         public Uri AuthorityUri { get; }
 
         /// <summary>
-        /// Gets the Resource API endpoint URI 
+        /// Gets the Resource API endpoint URI
         /// </summary>
         public Uri ResourceUri { get; }
 
@@ -96,22 +103,23 @@ namespace Vasont.IdentityServer.Backchannel
         /// Gets a value indicating whether the client has a recent error.
         /// </summary>
         public bool HasErrors => this.LastException != null || (this.ErrorResponse != null && this.ErrorResponse.Messages.Any(e => e.ErrorType == ErrorType.Fatal || e.ErrorType == ErrorType.Critical));
-        #endregion
 
-        #region Public Methods        
+        #endregion public Properties
+
+        #region Public Methods
+
         /// <summary>
         /// Discoveries this instance.
         /// </summary>
         /// <param name="cancellationToken">Contains an cancellation token.</param>
         /// <returns>Returns a new DiscoveryResponse object.</returns>
-        public async Task<DiscoveryResponse> RetrieveDiscovery(CancellationToken cancellationToken)
+        public async Task<DiscoveryDocumentResponse> RetrieveDiscovery(CancellationToken cancellationToken)
         {
-            DiscoveryResponse discoResponse;
+            DiscoveryDocumentResponse discoResponse;
 
             using (HttpClient httpClient = new HttpClient())
             {
                 discoResponse = await httpClient.GetDiscoveryDocumentAsync(this.AuthorityUri.ToString(), cancellationToken).ConfigureAwait(false);
-
 
                 if (discoResponse.IsError)
                 {
@@ -142,15 +150,16 @@ namespace Vasont.IdentityServer.Backchannel
             TokenResponse response;
 
             using (HttpClient client = new HttpClient())
+            using (var tokenRequest = new ClientCredentialsTokenRequest
+            {
+                Address = tokenEndpointUrl,
+                ClientId = clientId,
+                Scope = scopes,
+                ClientSecret = this.identityClientSecret
+            })
             {
                 response = await client.RequestClientCredentialsTokenAsync(
-                        new ClientCredentialsTokenRequest
-                        {
-                            Address = tokenEndpointUrl,
-                            ClientId = clientId,
-                            Scope = scopes,
-                            ClientSecret = this.identityClientSecret
-                        },
+                        tokenRequest,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -263,8 +272,8 @@ namespace Vasont.IdentityServer.Backchannel
         }
 
         /// <summary>
-        /// This method is used to notify the identity server that a user has been removed from an inspire subscription 
-        /// through the Inspire interface and should remove the user from the 
+        /// This method is used to notify the identity server that a user has been removed from an inspire subscription
+        /// through the Inspire interface and should remove the user from the
         /// </summary>
         /// <param name="domainKey">Contains the domain key where the request is being sent from.</param>
         /// <param name="userId">Contains the user identity of the user to remove from a subscription.</param>
@@ -350,9 +359,11 @@ namespace Vasont.IdentityServer.Backchannel
             var request = this.CreateRequest($"Backchannel/OrganizationUsers/{userId}/IsManager", HttpMethod.Get);
             return this.RequestContent<bool>(request);
         }
-        #endregion
+
+        #endregion Public Methods
 
         #region Protected Methods
+
         /// <summary>
         /// This method is used to easily create a new WebRequest object for the Web API.
         /// </summary>
@@ -465,7 +476,7 @@ namespace Vasont.IdentityServer.Backchannel
             // check to ensure we're not trying to post data on a GET or other non-body request.
             if (request.Method != HttpMethod.Post.Method && request.Method != HttpMethod.Put.Method && request.Method != HttpMethod.Delete.Method)
             {
-                throw new HttpRequestException("Request method must be POST, PUT, or DELETE");
+                throw new HttpRequestException(Properties.Resources.HttpRequestTypeGetInvalidErrorText);
             }
 
             byte[] requestData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestBodyModel));
@@ -497,34 +508,36 @@ namespace Vasont.IdentityServer.Backchannel
             try
             {
                 // execute the request
-                using var response = (HttpWebResponse)request.GetResponse();
-                using var responseStream = response.GetResponseStream();
-                using var reader = new StreamReader(responseStream ?? throw new InvalidOperationException());
-
-                resultContent = reader.ReadToEnd();
-
-                // if the status code was an error and there's content...
-                if ((int)response.StatusCode >= 400 && !string.IsNullOrWhiteSpace(resultContent))
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (var responseStream = response.GetResponseStream())
+                using (var reader = new StreamReader(responseStream ?? throw new InvalidOperationException()))
                 {
-                    // set the error model
-                    this.ErrorResponse = JsonConvert.DeserializeObject<IdentityErrorResponseModel>(resultContent);
+                    resultContent = reader.ReadToEnd();
+
+                    // if the status code was an error and there's content...
+                    if ((int)response.StatusCode >= 400 && !string.IsNullOrWhiteSpace(resultContent))
+                    {
+                        // set the error model
+                        this.ErrorResponse = JsonConvert.DeserializeObject<IdentityErrorResponseModel>(resultContent);
+                    }
                 }
             }
             catch (WebException webEx)
             {
                 this.LastException = webEx;
 
-                using var exceptionResponse = (HttpWebResponse)webEx.Response;
-                using var responseStream = exceptionResponse.GetResponseStream();
-                using var reader = new StreamReader(responseStream ?? throw new InvalidOperationException());
-                    
-                resultContent = reader.ReadToEnd();
-
-                // if the status code was an error and there's content...
-                if ((int)exceptionResponse.StatusCode >= 400 && !string.IsNullOrWhiteSpace(resultContent))
+                using (var exceptionResponse = (HttpWebResponse)webEx.Response)
+                using (var responseStream = exceptionResponse.GetResponseStream())
+                using (var reader = new StreamReader(responseStream ?? throw new InvalidOperationException()))
                 {
-                    // set the error model
-                    this.ErrorResponse = JsonConvert.DeserializeObject<IdentityErrorResponseModel>(resultContent);
+                    resultContent = reader.ReadToEnd();
+
+                    // if the status code was an error and there's content...
+                    if ((int)exceptionResponse.StatusCode >= 400 && !string.IsNullOrWhiteSpace(resultContent))
+                    {
+                        // set the error model
+                        this.ErrorResponse = JsonConvert.DeserializeObject<IdentityErrorResponseModel>(resultContent);
+                    }
                 }
             }
 
@@ -539,6 +552,7 @@ namespace Vasont.IdentityServer.Backchannel
             this.ErrorResponse.HasUnhandledException = false;
             this.ErrorResponse.Messages.Clear();
         }
-        #endregion
+
+        #endregion Protected Methods
     }
 }

@@ -45,6 +45,8 @@ namespace Vasont.IdentityServer.Backchannel
         /// </summary>
         private readonly string identityClientSecret;
 
+        private readonly string clientId;
+
         /// <summary>
         /// Contains the client authentication token response.
         /// </summary>
@@ -61,11 +63,12 @@ namespace Vasont.IdentityServer.Backchannel
         /// <param name="resourceUri">Contains the URI to the Identity API endpoint.</param>
         /// <param name="identityClientSecret">Contains the API resource client secret.</param>
         /// <param name="useDiscoveryForEndpoint">Contains a value indicating whether the discovery endpoint is used for token endpoint information.</param>
-        public IdentityClient(Uri authorityUri, Uri resourceUri, string identityClientSecret, bool useDiscoveryForEndpoint = true)
+        public IdentityClient(Uri authorityUri, Uri resourceUri, string identityClientSecret, string clientId, bool useDiscoveryForEndpoint = true)
         {
             this.AuthorityUri = authorityUri;
             this.ResourceUri = resourceUri;
             this.identityClientSecret = identityClientSecret;
+            this.clientId = String.IsNullOrEmpty(clientId) ? DefaultIdentityClientId : clientId;
             this.ErrorResponse = new IdentityErrorResponseModel();
             this.useDiscoveryForEndpoint = useDiscoveryForEndpoint;
         }
@@ -199,7 +202,7 @@ namespace Vasont.IdentityServer.Backchannel
                 tokenEndpointUrl = new Uri(this.AuthorityUri, "/connect/token").ToString();
             }
 
-            this.tokenResponse = await this.RequestClientCredentials(tokenEndpointUrl, DefaultIdentityClientId, scopes, cancellationToken).ConfigureAwait(false);
+            this.tokenResponse = await this.RequestClientCredentials(tokenEndpointUrl, this.clientId, scopes, cancellationToken).ConfigureAwait(false);
 
             // an error occurred...
             if (this.tokenResponse.IsError)
@@ -410,7 +413,7 @@ namespace Vasont.IdentityServer.Backchannel
             }
 
             request.Credentials = credentials;
-            request.UserAgent = DefaultIdentityClientId;
+            request.UserAgent = this.clientId;
             request.Accept = "application/json";
             request.ContentType = contentType;
 

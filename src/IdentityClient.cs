@@ -68,7 +68,7 @@ namespace Vasont.IdentityServer.Backchannel
             this.AuthorityUri = authorityUri;
             this.ResourceUri = resourceUri;
             this.identityClientSecret = identityClientSecret;
-            this.clientId = String.IsNullOrEmpty(clientId) ? DefaultIdentityClientId : clientId;
+            this.clientId = String.IsNullOrWhiteSpace(clientId) ? DefaultIdentityClientId : clientId;
             this.ErrorResponse = new IdentityErrorResponseModel();
             this.useDiscoveryForEndpoint = useDiscoveryForEndpoint;
         }

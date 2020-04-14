@@ -45,6 +45,9 @@ namespace Vasont.IdentityServer.Backchannel
         /// </summary>
         private readonly string identityClientSecret;
 
+        /// <summary>
+        /// Contains the identity of the client
+        /// </summary>
         private readonly string clientId;
 
         /// <summary>
@@ -62,6 +65,7 @@ namespace Vasont.IdentityServer.Backchannel
         /// <param name="authorityUri">Contains the URI to the Identity Authority endpoint.</param>
         /// <param name="resourceUri">Contains the URI to the Identity API endpoint.</param>
         /// <param name="identityClientSecret">Contains the API resource client secret.</param>
+        /// <param name="clientId">Contains the identity of the client.</param>
         /// <param name="useDiscoveryForEndpoint">Contains a value indicating whether the discovery endpoint is used for token endpoint information.</param>
         public IdentityClient(Uri authorityUri, Uri resourceUri, string identityClientSecret, string clientId, bool useDiscoveryForEndpoint = true)
         {

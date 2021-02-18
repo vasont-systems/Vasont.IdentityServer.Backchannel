@@ -9,19 +9,22 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;net48;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <AssemblyVersion>1.1.3.0</AssemblyVersion>
-    <FileVersion>1.1.3.0</FileVersion>
-    <Version>1.1.3</Version>
+    <AssemblyVersion>1.1.4.0</AssemblyVersion>
+    <FileVersion>1.1.4.0</FileVersion>
+    <Version>1.1.4.0</Version>
     <LangVersion>latest</LangVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>updated code to support new identity model library.</PackageReleaseNotes>
-    <Description>Contains back channel communication library used for interaction with Vasont Identity Server API.</Description>
-    <Authors>Vasont Systems</Authors>
-    <Company>Vasont Systems</Company>
+    <PackageReleaseNotes>Added new UniqueResourceKey property to application subscription model.</PackageReleaseNotes>
+    <Description>Contains back channel communication library used for interaction with Vasont Identity Server and License Server resources.</Description>
+    <Authors>GlobalLink Vasont</Authors>
+    <Company>GlobalLink Vasont</Company>
     <Product>Vasont Identity Server Backchannel Library</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <NeutralLanguage>English</NeutralLanguage>
+    <RepositoryUrl>https://github.com/vasont-systems/Vasont.IdentityServer.Backchannel</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://vasont.com</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

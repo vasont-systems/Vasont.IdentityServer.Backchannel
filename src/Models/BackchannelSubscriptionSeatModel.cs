@@ -62,6 +62,12 @@ namespace Vasont.IdentityServer.Backchannel.Models
         public string ApplicationName { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique resource key.
+        /// </summary>
+        /// <value>The unique resource key.</value>
+        public string UniqueResourceKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the associated subscription type.
         /// </summary>
         public string SubscriptionType { get; set; }

@@ -141,6 +141,11 @@ namespace Vasont.IdentityServer.Backchannel.Models
         public string Locale { get; set; }
 
         /// <summary>
+        /// Gets or sets the date format.
+        /// </summary>
+        public string DateFormat { get; set; }
+
+        /// <summary>
         /// Gets or sets the time zone name.
         /// </summary>
         public string TimezoneName { get; set; }
